@@ -41,3 +41,6 @@ const itemSchema = new mongoose.Schema({
        default: Date.now,
      },
 });
+
+const ItemModel = mongoose.model('Item', itemSchema);
+module.exports = ItemModel;

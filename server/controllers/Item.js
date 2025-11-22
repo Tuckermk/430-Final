@@ -3,6 +3,7 @@ const models = require('../models');
 const { Item } = models;
 
 const makerPage = async (req, res) => res.render('app');
+const inventoryPage = async (req, res) => res.render('app');
 
 const makeItem = async (req, res) => {
   if (!req.body.name) {
@@ -18,7 +19,7 @@ const makeItem = async (req, res) => {
     await newItem.save();
     return res.status(201).json({
       name: newItem.name,
-      //NTS reminder to calc xOverall & yOverall
+      //NTS reminder to calc xOverall & yOverall -- Think it might be working testing required
     });
   } catch (err) {
     console.log(err);
@@ -27,4 +28,23 @@ const makeItem = async (req, res) => {
     }
     return res.status(500).json({ error: 'error occured making new item' });
   }
+}
+
+const getItems = async (req, res) => {
+  try {
+    const query = { owner: req.session.account._id };
+    const docs = await Item.find(query).select('name pieces xOverall yOverall').lean().exec();
+
+    return res.json({ items: docs });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'error retrieving items' });
+  }
+};
+
+module.exports = {
+  makerPage,
+  makeItem,
+  getItems,
+  inventoryPage,
 }
