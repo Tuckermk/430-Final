@@ -9,7 +9,7 @@
 
 const handleError = message => {
   document.getElementById('errorMessage').textContent = message;
-  document.getElementById('domoMessage').classList.remove('hidden');
+  document.getElementById('itemMessage').classList.remove('hidden');
 };
 
 /* Sends post requests to the server using fetch. Will look for various
@@ -25,7 +25,7 @@ const sendPost = async (url, data, handler) => {
     body: JSON.stringify(data)
   });
   const result = await response.json();
-  document.getElementById('domoMessage').classList.add('hidden');
+  document.getElementById('itemMessage').classList.add('hidden');
   if (result.redirect) {
     window.location = result.redirect;
   }
@@ -37,13 +37,395 @@ const sendPost = async (url, data, handler) => {
   }
 };
 const hideError = () => {
-  document.getElementById('domoMessage').classList.add('hidden');
+  document.getElementById('itemMessage').classList.add('hidden');
 };
 module.exports = {
   handleError,
   sendPost,
   hideError
 };
+
+/***/ }),
+
+/***/ "./client/index.js":
+/*!*************************!*\
+  !*** ./client/index.js ***!
+  \*************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports.inventory = __webpack_require__(/*! ./inventory.jsx */ "./client/inventory.jsx");
+module.exports.login = __webpack_require__(/*! ./login.jsx */ "./client/login.jsx");
+module.exports.maker = __webpack_require__(/*! ./maker.jsx */ "./client/maker.jsx");
+
+/***/ }),
+
+/***/ "./client/inventory.jsx":
+/*!******************************!*\
+  !*** ./client/inventory.jsx ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/core/DndProvider.js");
+/* harmony import */ var react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dnd-html5-backend */ "./node_modules/react-dnd-html5-backend/dist/index.js");
+/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrag/useDrag.js");
+/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrop/useDrop.js");
+const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
+const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+const {
+  useState,
+  useEffect
+} = React;
+const {
+  createRoot
+} = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+
+
+
+
+
+//Inventory Items are going to be called ite here since Dragging has a item key
+function ItemDragging({
+  ite,
+  children
+}) {
+  const [{
+    isDragging
+  }, drag] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_2__.useDrag)(() => ({
+    type: "ITE",
+    item: {
+      id: ite._id
+    },
+    collect: monitor => ({
+      isDragging: monitor.isDragging()
+    })
+  }));
+  return /*#__PURE__*/React.createElement("div", {
+    ref: drag,
+    style: {
+      position: "absolute",
+      left: ite.xOverall,
+      top: ite.yOverall,
+      opacity: isDragging ? 0.5 : 1,
+      cursor: "grab" //cool little styling thing i found
+    }
+  }, children);
+}
+const ScreenDropLayer = ({
+  onDrop,
+  children
+}) => {
+  const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
+    accept: "ITE",
+    //v these should be item not ite, i think
+    drop: (item, monitor) => {
+      const offset = monitor.getClientOffset();
+      if (!offset) return;
+      onDrop(item.id, offset.x, offset.y);
+    }
+  }));
+  return /*#__PURE__*/React.createElement("div", {
+    ref: dropRef,
+    style: {
+      position: "fixed",
+      inset: 0
+    }
+  }, children);
+};
+
+//NTS Need to make board
+//perhaps go find making a chessboard for example?
+
+const ItemList = props => {
+  const [items, setItems] = useState(props.items);
+  useEffect(() => {
+    const loadItemsFromServer = async () => {
+      const response = await fetch('/getItems');
+      const data = await response.json();
+      const merged = data.items.map(ite => {
+        const pos = props.positions[ite._id] || {
+          x: 20,
+          y: 20
+        }; //NTS Probably the thing to alter to make it work with a cloud server
+        return {
+          _id: ite._id,
+          name: ite.name,
+          pieces: ite.pieces,
+          x: pos.x,
+          y: pos.y
+        };
+      });
+      setItems(merged);
+    };
+    loadItemsFromServer();
+  }, [props.reloadItems, props.positions]);
+  if (items.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "itemList"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "emptyItem"
+    }, "No Items Yet"));
+  }
+  const itemNodes = items.map(ite => {
+    return /*#__PURE__*/React.createElement(ItemDragging, {
+      key: ite._id,
+      item: ite
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "item"
+    }, /*#__PURE__*/React.createElement("img", {
+      src: "/assets/img/domoface.jpeg",
+      alt: "domo face",
+      className: "domoFace"
+    }), /*#__PURE__*/React.createElement("h3", {
+      className: "itemName"
+    }, "Name: ", ite.name), /*#__PURE__*/React.createElement("h3", {
+      className: "itemPieces"
+    }, "Pieces: ", ite.pieces)));
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ItemList"
+  }, itemNodes);
+};
+const App = () => {
+  const [reloadItems, setReloadItems] = useState(false);
+  const [positions, setPositions] = useState({}); // store id → {x,y}
+
+  const moveItem = (id, x, y) => {
+    setPositions(prev => ({
+      ...prev,
+      [id]: {
+        x,
+        y
+      }
+    }));
+  };
+  return /*#__PURE__*/React.createElement(ScreenDropLayer, {
+    onDrop: moveItem
+  }, /*#__PURE__*/React.createElement(ItemForm, {
+    triggerReload: () => setReloadItems(!reloadItems)
+  }), /*#__PURE__*/React.createElement(ItemList, {
+    items: [],
+    reloadItems: reloadItems,
+    positions: positions
+  }));
+};
+const init = () => {
+  const root = createRoot(document.getElementById('app'));
+  root.render(/*#__PURE__*/React.createElement(react_dnd__WEBPACK_IMPORTED_MODULE_0__.DndProvider, {
+    backend: react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__.HTML5Backend
+  }, /*#__PURE__*/React.createElement(App, null)));
+};
+window.onload = init;
+
+/***/ }),
+
+/***/ "./client/login.jsx":
+/*!**************************!*\
+  !*** ./client/login.jsx ***!
+  \**************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
+const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+const {
+  createRoot
+} = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+const handleLogin = e => {
+  e.preventDefault();
+  helper.hideError();
+  const username = e.target.querySelector('#user').value;
+  const pass = e.target.querySelector('#pass').value;
+  if (!username || !pass) {
+    helper.handleError('Username or password is empty');
+    return false;
+  }
+  helper.sendPost(e.target.action, {
+    username,
+    pass
+  });
+  return false;
+};
+const handleSignup = e => {
+  e.preventDefault();
+  helper.hideError();
+  const username = e.target.querySelector('#user').value;
+  const pass = e.target.querySelector('#pass').value;
+  const pass2 = e.target.querySelector('#pass2').value;
+  if (!username || !pass || !pass2) {
+    helper.handleError('all fields required');
+    return false;
+  }
+  if (pass !== pass2) {
+    helper.handleError('passwords dont match');
+    return false;
+  }
+  helper.sendPost(e.target.action, {
+    username,
+    pass,
+    pass2
+  });
+  return false;
+};
+const LoginWindow = props => {
+  return /*#__PURE__*/React.createElement("form", {
+    id: "loginForm",
+    name: "loginForm",
+    onSubmit: handleLogin,
+    action: "/login",
+    method: "POST",
+    className: "mainForm"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "username"
+  }, "Username: "), /*#__PURE__*/React.createElement("input", {
+    id: "user",
+    type: "text",
+    name: "username",
+    placeholder: "username"
+  }), /*#__PURE__*/React.createElement("label", {
+    htmlFor: "pass"
+  }, "Password: "), /*#__PURE__*/React.createElement("input", {
+    id: "pass",
+    type: "password",
+    name: "pass",
+    placeholder: "password"
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "formSubmit",
+    type: "submit",
+    value: "Sign in"
+  }));
+};
+const SignupWindow = props => {
+  return /*#__PURE__*/React.createElement("form", {
+    id: "signupForm",
+    name: "signupForm",
+    onSubmit: handleSignup,
+    action: "/signup",
+    method: "POST",
+    className: "mainForm"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "username"
+  }, "Username: "), /*#__PURE__*/React.createElement("input", {
+    id: "user",
+    type: "text",
+    name: "username",
+    placeholder: "username"
+  }), /*#__PURE__*/React.createElement("label", {
+    htmlFor: "pass"
+  }, "Password: "), /*#__PURE__*/React.createElement("input", {
+    id: "pass",
+    type: "password",
+    name: "pass",
+    placeholder: "password"
+  }), /*#__PURE__*/React.createElement("label", {
+    htmlFor: "pass"
+  }, "Password: "), /*#__PURE__*/React.createElement("input", {
+    id: "pass2",
+    type: "password",
+    name: "pass2",
+    placeholder: "password"
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "formSubmit",
+    type: "submit",
+    value: "Sign up"
+  }));
+};
+const init = () => {
+  const loginButton = document.getElementById('loginButton');
+  const signupButton = document.getElementById('signupButton');
+  const root = createRoot(document.getElementById('content'));
+  loginButton.addEventListener('click', e => {
+    e.preventDefault();
+    root.render(/*#__PURE__*/React.createElement(LoginWindow, null));
+    return false;
+  });
+  signupButton.addEventListener('click', e => {
+    e.preventDefault();
+    root.render(/*#__PURE__*/React.createElement(SignupWindow, null));
+    return false;
+  });
+  root.render(/*#__PURE__*/React.createElement(LoginWindow, null));
+};
+window.onload = init;
+
+/***/ }),
+
+/***/ "./client/maker.jsx":
+/*!**************************!*\
+  !*** ./client/maker.jsx ***!
+  \**************************/
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
+const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+const {
+  useState,
+  useEffect
+} = React;
+const {
+  createRoot
+} = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+const handleItem = (e, onItemAdded) => {
+  e.preventDefault();
+  helper.hideError();
+  const name = e.target.querySelector('#itemName').value;
+  //  NTS need to make a pieces parser, go find the one i made for the Unity version perhaps?
+  const pieces = e.target.querySelector('#itemPieces').value;
+  const xOverall = innerWidth / 2;
+  const yOverall = innerHeight / 2;
+  if (!name || !pieces) {
+    helper.handleError('all fields required');
+    return false;
+  }
+  helper.sendPost(e.target.action, {
+    name,
+    pieces,
+    xOverall,
+    yOverall
+  }, onItemAdded);
+  return false;
+};
+const ItemForm = props => {
+  return /*#__PURE__*/React.createElement("form", {
+    id: "itemForm",
+    name: "itemForm",
+    onSubmit: e => handleItem(e, props.triggerReload),
+    action: "/maker",
+    method: "POST",
+    className: "itemForm"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "name"
+  }, "Name: "), /*#__PURE__*/React.createElement("input", {
+    id: "itemName",
+    type: "text",
+    name: "name",
+    placeholder: "Item Name"
+  }), /*#__PURE__*/React.createElement("label", {
+    htmlFor: "pieces"
+  }, "Pieces: "), /*#__PURE__*/React.createElement("input", {
+    id: "itemPieces",
+    type: "array",
+    name: "pieces",
+    placeholder: "(0,1), (1,1), (2,1)"
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "makeItemSubmit",
+    type: "submit",
+    value: "Make Item"
+  }));
+};
+const App = () => {
+  const [reloadItems, setReloadItems] = useState(false);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    id: "makeItem"
+  }, /*#__PURE__*/React.createElement(ItemForm, {
+    triggerReload: () => setReloadItems(!reloadItems)
+  })));
+};
+const init = () => {
+  const root = createRoot(document.getElementById('app'));
+  root.render(/*#__PURE__*/React.createElement(App, null));
+};
+window.onload = init;
 
 /***/ }),
 
@@ -36651,218 +37033,12 @@ if (false) // removed by dead control flow
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
-(() => {
-"use strict";
-/*!**************************!*\
-  !*** ./client/maker.jsx ***!
-  \**************************/
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/core/DndProvider.js");
-/* harmony import */ var react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dnd-html5-backend */ "./node_modules/react-dnd-html5-backend/dist/index.js");
-/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrag/useDrag.js");
-/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrop/useDrop.js");
-const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
-const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-const {
-  useState,
-  useEffect
-} = React;
-const {
-  createRoot
-} = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
-
-
-
-
-const handleDomo = (e, onDomoAdded) => {
-  e.preventDefault();
-  helper.hideError();
-  const name = e.target.querySelector('#domoName').value;
-  const age = e.target.querySelector('#domoAge').value;
-  const height = e.target.querySelector('#domoHeight').value;
-  const x = innerWidth / 2;
-  const y = innerHeight / 2;
-  if (!name || !age || !height) {
-    helper.handleError('all fields required');
-    return false;
-  }
-  helper.sendPost(e.target.action, {
-    name,
-    age,
-    height,
-    x,
-    y
-  }, onDomoAdded);
-  return false;
-};
-const DomoForm = props => {
-  return /*#__PURE__*/React.createElement("form", {
-    id: "domoForm",
-    name: "domoForm",
-    onSubmit: e => handleDomo(e, props.triggerReload),
-    action: "/maker",
-    method: "POST",
-    className: "domoForm"
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "name"
-  }, "Name: "), /*#__PURE__*/React.createElement("input", {
-    id: "domoName",
-    type: "text",
-    name: "name",
-    placeholder: "Domo Name"
-  }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "age"
-  }, "Age: "), /*#__PURE__*/React.createElement("input", {
-    id: "domoAge",
-    type: "number",
-    name: "age",
-    min: "0"
-  }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "Height"
-  }, "Height: "), /*#__PURE__*/React.createElement("input", {
-    id: "domoHeight",
-    type: "number",
-    name: "height",
-    min: "0"
-  }), /*#__PURE__*/React.createElement("input", {
-    className: "makeDomoSubmit",
-    type: "submit",
-    value: "Make Domo"
-  }));
-};
-function DomoDragging({
-  domo,
-  children
-}) {
-  const [{
-    isDragging
-  }, drag] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_2__.useDrag)(() => ({
-    type: "DOMO",
-    item: {
-      id: domo._id
-    },
-    collect: monitor => ({
-      isDragging: monitor.isDragging()
-    })
-  }));
-  return /*#__PURE__*/React.createElement("div", {
-    ref: drag,
-    style: {
-      position: "absolute",
-      left: domo.x,
-      top: domo.y,
-      opacity: isDragging ? 0.5 : 1,
-      cursor: "grab" //cool little styling thing i found
-    }
-  }, children);
-}
-const ScreenDropLayer = ({
-  onDrop,
-  children
-}) => {
-  const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
-    accept: "DOMO",
-    drop: (item, monitor) => {
-      const offset = monitor.getClientOffset();
-      if (!offset) return;
-      onDrop(item.id, offset.x, offset.y);
-    }
-  }));
-  return /*#__PURE__*/React.createElement("div", {
-    ref: dropRef,
-    style: {
-      position: "fixed",
-      inset: 0
-    }
-  }, children);
-};
-const DomoList = props => {
-  const [domos, setDomos] = useState(props.domos);
-  useEffect(() => {
-    const loadDomosFromServer = async () => {
-      const response = await fetch('/getDomos');
-      const data = await response.json();
-      const merged = data.domos.map(d => {
-        const pos = props.positions[d._id] || {
-          x: 20,
-          y: 20
-        };
-        return {
-          _id: d._id,
-          name: d.name,
-          age: d.age,
-          height: d.height,
-          x: pos.x,
-          y: pos.y
-        };
-      });
-      setDomos(merged);
-    };
-    loadDomosFromServer();
-  }, [props.reloadDomos, props.positions]);
-  if (domos.length === 0) {
-    return /*#__PURE__*/React.createElement("div", {
-      className: "domoList"
-    }, /*#__PURE__*/React.createElement("h3", {
-      className: "emptyDomo"
-    }, "No Domos Yet"));
-  }
-  const domoNodes = domos.map(domo => {
-    return /*#__PURE__*/React.createElement(DomoDragging, {
-      key: domo._id,
-      domo: domo
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "domo"
-    }, /*#__PURE__*/React.createElement("img", {
-      src: "/assets/img/domoface.jpeg",
-      alt: "domo face",
-      className: "domoFace"
-    }), /*#__PURE__*/React.createElement("h3", {
-      className: "domoName"
-    }, "Name: ", domo.name), /*#__PURE__*/React.createElement("h3", {
-      className: "domoAge"
-    }, "Age: ", domo.age), /*#__PURE__*/React.createElement("h3", {
-      className: "domoHeight"
-    }, "Height: ", domo.height)));
-  });
-  return /*#__PURE__*/React.createElement("div", {
-    className: "domoList"
-  }, domoNodes);
-};
-const App = () => {
-  const [reloadDomos, setReloadDomos] = useState(false);
-  const [positions, setPositions] = useState({}); // store id → {x,y}
-
-  const moveDomo = (id, x, y) => {
-    setPositions(prev => ({
-      ...prev,
-      [id]: {
-        x,
-        y
-      }
-    }));
-  };
-  return /*#__PURE__*/React.createElement(ScreenDropLayer, {
-    onDrop: moveDomo
-  }, /*#__PURE__*/React.createElement(DomoForm, {
-    triggerReload: () => setReloadDomos(!reloadDomos)
-  }), /*#__PURE__*/React.createElement(DomoList, {
-    domos: [],
-    reloadDomos: reloadDomos,
-    positions: positions
-  }));
-};
-const init = () => {
-  const root = createRoot(document.getElementById('app'));
-  root.render(/*#__PURE__*/React.createElement(react_dnd__WEBPACK_IMPORTED_MODULE_0__.DndProvider, {
-    backend: react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__.HTML5Backend
-  }, /*#__PURE__*/React.createElement(App, null)));
-};
-window.onload = init;
-})();
-
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module used 'module' so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__("./client/index.js");
+/******/ 	
 /******/ })()
 ;
 //# sourceMappingURL=appBundle.js.map

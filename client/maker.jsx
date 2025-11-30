@@ -3,11 +3,6 @@ const React = require('react');
 const {useState,useEffect} = React;
 const {createRoot} = require('react-dom/client');
 
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { useDrag } from 'react-dnd';
-import { useDrop } from 'react-dnd';
-
 const handleItem = (e, onItemAdded) => {
    e.preventDefault();
    helper.hideError();
@@ -38,9 +33,25 @@ const ItemForm = (props) => {
          <label htmlFor='name'>Name: </label>
          <input id='itemName' type='text' name='name' placeholder='Item Name'/>
          <label htmlFor='pieces'>Pieces: </label>
-         <input id='itemPieces' type='array' name='pieces' placeholder='[0,1], [1,1], [2,1]'/>
+         <input id='itemPieces' type='array' name='pieces' placeholder='(0,1), (1,1), (2,1)'/>
          <input className='makeItemSubmit' type='submit' value="Make Item" />
       </form>
    )
 };
-//NTS Follow Domo D maker page setup for this area
+
+const App = () => {
+  const [reloadItems, setReloadItems] = useState(false);
+
+  return (
+    <div>
+      <div id="makeItem">
+        <ItemForm triggerReload={() => setReloadItems(!reloadItems)}/>
+      </div>
+    </div>
+  );
+}
+const init = () => {
+  const root = createRoot(document.getElementById('app'));
+  root.render(<App/>);
+};
+window.onload = init;

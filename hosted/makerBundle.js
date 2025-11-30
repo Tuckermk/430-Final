@@ -30440,131 +30440,80 @@ var __webpack_exports__ = {};
 // This entry needs to be wrapped in an IIFE because it needs to be isolated against other modules in the chunk.
 (() => {
 /*!**************************!*\
-  !*** ./client/login.jsx ***!
+  !*** ./client/maker.jsx ***!
   \**************************/
 const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const {
+  useState,
+  useEffect
+} = React;
+const {
   createRoot
 } = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
-const handleLogin = e => {
+const handleItem = (e, onItemAdded) => {
   e.preventDefault();
   helper.hideError();
-  const username = e.target.querySelector('#user').value;
-  const pass = e.target.querySelector('#pass').value;
-  if (!username || !pass) {
-    helper.handleError('Username or password is empty');
-    return false;
-  }
-  helper.sendPost(e.target.action, {
-    username,
-    pass
-  });
-  return false;
-};
-const handleSignup = e => {
-  e.preventDefault();
-  helper.hideError();
-  const username = e.target.querySelector('#user').value;
-  const pass = e.target.querySelector('#pass').value;
-  const pass2 = e.target.querySelector('#pass2').value;
-  if (!username || !pass || !pass2) {
+  const name = e.target.querySelector('#itemName').value;
+  //  NTS need to make a pieces parser, go find the one i made for the Unity version perhaps?
+  const pieces = e.target.querySelector('#itemPieces').value;
+  const xOverall = innerWidth / 2;
+  const yOverall = innerHeight / 2;
+  if (!name || !pieces) {
     helper.handleError('all fields required');
     return false;
   }
-  if (pass !== pass2) {
-    helper.handleError('passwords dont match');
-    return false;
-  }
   helper.sendPost(e.target.action, {
-    username,
-    pass,
-    pass2
-  });
+    name,
+    pieces,
+    xOverall,
+    yOverall
+  }, onItemAdded);
   return false;
 };
-const LoginWindow = props => {
+const ItemForm = props => {
   return /*#__PURE__*/React.createElement("form", {
-    id: "loginForm",
-    name: "loginForm",
-    onSubmit: handleLogin,
-    action: "/login",
+    id: "itemForm",
+    name: "itemForm",
+    onSubmit: e => handleItem(e, props.triggerReload),
+    action: "/maker",
     method: "POST",
-    className: "mainForm"
+    className: "itemForm"
   }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "username"
-  }, "Username: "), /*#__PURE__*/React.createElement("input", {
-    id: "user",
+    htmlFor: "name"
+  }, "Name: "), /*#__PURE__*/React.createElement("input", {
+    id: "itemName",
     type: "text",
-    name: "username",
-    placeholder: "username"
+    name: "name",
+    placeholder: "Item Name"
   }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "pass"
-  }, "Password: "), /*#__PURE__*/React.createElement("input", {
-    id: "pass",
-    type: "password",
-    name: "pass",
-    placeholder: "password"
+    htmlFor: "pieces"
+  }, "Pieces: "), /*#__PURE__*/React.createElement("input", {
+    id: "itemPieces",
+    type: "array",
+    name: "pieces",
+    placeholder: "(0,1), (1,1), (2,1)"
   }), /*#__PURE__*/React.createElement("input", {
-    className: "formSubmit",
+    className: "makeItemSubmit",
     type: "submit",
-    value: "Sign in"
+    value: "Make Item"
   }));
 };
-const SignupWindow = props => {
-  return /*#__PURE__*/React.createElement("form", {
-    id: "signupForm",
-    name: "signupForm",
-    onSubmit: handleSignup,
-    action: "/signup",
-    method: "POST",
-    className: "mainForm"
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "username"
-  }, "Username: "), /*#__PURE__*/React.createElement("input", {
-    id: "user",
-    type: "text",
-    name: "username",
-    placeholder: "username"
-  }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "pass"
-  }, "Password: "), /*#__PURE__*/React.createElement("input", {
-    id: "pass",
-    type: "password",
-    name: "pass",
-    placeholder: "password"
-  }), /*#__PURE__*/React.createElement("label", {
-    htmlFor: "pass"
-  }, "Password: "), /*#__PURE__*/React.createElement("input", {
-    id: "pass2",
-    type: "password",
-    name: "pass2",
-    placeholder: "password"
-  }), /*#__PURE__*/React.createElement("input", {
-    className: "formSubmit",
-    type: "submit",
-    value: "Sign up"
-  }));
+const App = () => {
+  const [reloadItems, setReloadItems] = useState(false);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    id: "makeItem"
+  }, /*#__PURE__*/React.createElement(ItemForm, {
+    triggerReload: () => setReloadItems(!reloadItems)
+  })));
 };
 const init = () => {
-  const loginButton = document.getElementById('loginButton');
-  const signupButton = document.getElementById('signupButton');
-  const root = createRoot(document.getElementById('content'));
-  loginButton.addEventListener('click', e => {
-    e.preventDefault();
-    root.render(/*#__PURE__*/React.createElement(LoginWindow, null));
-    return false;
-  });
-  signupButton.addEventListener('click', e => {
-    e.preventDefault();
-    root.render(/*#__PURE__*/React.createElement(SignupWindow, null));
-    return false;
-  });
-  root.render(/*#__PURE__*/React.createElement(LoginWindow, null));
+  const root = createRoot(document.getElementById('app'));
+  root.render(/*#__PURE__*/React.createElement(App, null));
 };
 window.onload = init;
 })();
 
 /******/ })()
 ;
-//# sourceMappingURL=loginBundle.js.map
+//# sourceMappingURL=makerBundle.js.map

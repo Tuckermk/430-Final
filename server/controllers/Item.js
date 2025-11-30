@@ -2,8 +2,8 @@ const models = require('../models');
 
 const { Item } = models;
 
-const makerPage = async (req, res) => res.render('app');
 const inventoryPage = async (req, res) => res.render('app');
+const makerPage = async (req, res) => res.render('app');
 
 const makeItem = async (req, res) => {
   if (!req.body.name) {
