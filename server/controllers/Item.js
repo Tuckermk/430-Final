@@ -48,7 +48,6 @@ const updateItem = async(req,res)=> {
   const updated = await Item.findOneAndUpdate( //Worlds best builtin function
     { _id: itemData.id, owner: itemData.owner },
     { xOverall: itemData.xNew, yOverall: itemData.yNew },
-    { new: true }
   );
   return res.status(200).json(updated);
 }

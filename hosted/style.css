@@ -199,13 +199,11 @@ nav:nth-child(1) {
 }
 
 img.domoFace {
-    margin-left: 25px;
-    margin-right: 10px;
     height: 50px;
     width: 50px;
     border-radius: 4px;
-    margin-top:10px;
     float:left;
+    rotate:0deg;
 }
 
 h3.emptyItem {
@@ -231,4 +229,7 @@ h3.itemPieces {
     font-size: 1.5em;
 }
 
-
+.item{
+    height:auto;
+    width: auto;
+}

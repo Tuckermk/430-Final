@@ -7,11 +7,14 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useDrag } from 'react-dnd';
 import { useDrop } from 'react-dnd';
+import { forEach } from 'underscore';
+
+const squareSize = 5;
 
 function ItemDragging({item, children}) {
   const [{isDragging}, drag] = useDrag(() => ({
     type: "ITE",
-    item: {id: item._id, name: item.name, },
+    item: {id: item._id, name: item.name, x: item.x, y:item.y},
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -38,15 +41,14 @@ const ScreenDropLayer = ({ onDrop, children }) => {
   const [, dropRef] = useDrop(() => ({
     accept: "ITE",
     drop: (item, monitor) => {
-      const offset = monitor.getClientOffset();
+      const offset = monitor.getSourceClientOffset();
       if (!offset) return;
 
+      let {name, id} = item;
       let xNew = offset.x;
-      let yNew = offset.y;
-      let name = item.name;
-      let id = item.id;
+      let yNew = offset.y - 50; //NTS 50 is here due to Screen Drop Area being down 50
       helper.sendPost('/update', {id, name, xNew , yNew});
-      onDrop(item.id, offset.x, offset.y);
+      onDrop(item.id, xNew, yNew);
     },
   }));
   return (
@@ -54,7 +56,8 @@ const ScreenDropLayer = ({ onDrop, children }) => {
       ref={dropRef}
       style={{
         position: "fixed",
-        inset: 0,
+        inset: "0px",
+        top: "50px",
       }}
     >
       {children}
@@ -76,7 +79,7 @@ const ItemList = (props) => {
 
    const merged = data.items.map(i => {
    const pos = props.positions[i._id] || {x: i.xOverall, y: i.yOverall};
-   console.log(pos);
+   // console.log(pos);
    return {
       _id: i._id,
       name: i.name,
@@ -99,16 +102,28 @@ const ItemList = (props) => {
          </div>
       );
    }
+   //Parser/visual side to arrange the blocks
+   const blockMaker = (it) => {
+      const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
+      return split.map((coor) => {
+         let trimmed = coor.replace('(','').replace(')','')
+            .trim().split(','); //certainly a line of all time
+         let x = trimmed[0] *squareSize;
+         console.log(trimmed[0]);
+         let y = trimmed[1] *squareSize; 
+         console.log(trimmed[1]);
+    return (
+      <img key={coor} src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"
+        style={{position: "relative", left: x, top: y}}/>
+    );
+  });
+};
 
    const itemNodes = items.map(it => {
       return (
          <ItemDragging key={it._id} item={it}>
             <div className="item">
-               {/* NTS reminder to change the artwork */}
-               <img src="/assets/img/domoface.jpeg" alt='domo face' className='domoFace'/> 
-               <h3 className='itemName'>Name: {it.name}</h3>
-               <h3 className='itemPieces'>Pieces: {it.pieces}</h3>
-               <h3 className='Pos'>POS: {it.x},{it.y}</h3>
+            {blockMaker(it)}
             </div>
          </ItemDragging>
       );
