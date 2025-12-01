@@ -36676,10 +36676,8 @@ const {
 
 
 
-
-//Inventory Items are going to be called ite here since Dragging has a item key
 function ItemDragging({
-  ite,
+  item,
   children
 }) {
   const [{
@@ -36687,7 +36685,7 @@ function ItemDragging({
   }, drag] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_2__.useDrag)(() => ({
     type: "ITE",
     item: {
-      id: ite._id
+      id: item._id
     },
     collect: monitor => ({
       isDragging: monitor.isDragging()
@@ -36697,10 +36695,10 @@ function ItemDragging({
     ref: drag,
     style: {
       position: "absolute",
-      left: ite.xOverall,
-      top: ite.yOverall,
+      left: item.x,
+      top: item.y,
       opacity: isDragging ? 0.5 : 1,
-      cursor: "grab" //cool little styling thing i found
+      cursor: "grab"
     }
   }, children);
 }
@@ -36708,20 +36706,25 @@ const ScreenDropLayer = ({
   onDrop,
   children
 }) => {
-  const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
+  const dropRef = React.useRef(null);
+  (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
     accept: "ITE",
-    //v these should be item not ite, i think
     drop: (item, monitor) => {
-      const offset = monitor.getClientOffset();
-      if (!offset) return;
-      onDrop(item.id, offset.x, offset.y);
+      const client = monitor.getClientOffset();
+      const rect = dropRef.current.getBoundingClientRect();
+      const x = client.x - rect.left;
+      const y = client.y - rect.top;
+      onDrop(item.id, x, y);
     }
-  }));
+  }), [onDrop]);
   return /*#__PURE__*/React.createElement("div", {
     ref: dropRef,
     style: {
-      position: "fixed",
-      inset: 0
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
     }
   }, children);
 };
@@ -36735,15 +36738,16 @@ const ItemList = props => {
     const loadItemsFromServer = async () => {
       const response = await fetch('/getItems');
       const data = await response.json();
-      const merged = data.items.map(ite => {
-        const pos = props.positions[ite._id] || {
-          x: 20,
-          y: 20
-        }; //NTS Probably the thing to alter to make it work with a cloud server
+      const merged = data.items.map(i => {
+        const pos = props.positions[i] || {
+          x: i.xOverall,
+          y: i.yOverall
+        };
+        console.log(pos);
         return {
-          _id: ite._id,
-          name: ite.name,
-          pieces: ite.pieces,
+          _id: i._id,
+          name: i.name,
+          pieces: i.pieces,
           x: pos.x,
           y: pos.y
         };
@@ -36759,10 +36763,10 @@ const ItemList = props => {
       className: "emptyItem"
     }, "No Items Yet"));
   }
-  const itemNodes = items.map(ite => {
+  const itemNodes = items.map(it => {
     return /*#__PURE__*/React.createElement(ItemDragging, {
-      key: ite._id,
-      item: ite
+      key: it._id,
+      item: it
     }, /*#__PURE__*/React.createElement("div", {
       className: "item"
     }, /*#__PURE__*/React.createElement("img", {
@@ -36771,15 +36775,19 @@ const ItemList = props => {
       className: "domoFace"
     }), /*#__PURE__*/React.createElement("h3", {
       className: "itemName"
-    }, "Name: ", ite.name), /*#__PURE__*/React.createElement("h3", {
+    }, "Name: ", it.name), /*#__PURE__*/React.createElement("h3", {
       className: "itemPieces"
-    }, "Pieces: ", ite.pieces)));
+    }, "Pieces: ", it.pieces), /*#__PURE__*/React.createElement("h3", {
+      className: "itemPieces"
+    }, "x: ", it.x), /*#__PURE__*/React.createElement("h3", {
+      className: "itemPieces"
+    }, "y: ", it.y)));
   });
   return /*#__PURE__*/React.createElement("div", {
     className: "ItemList"
   }, itemNodes);
 };
-const App = () => {
+const Inv = () => {
   const [reloadItems, setReloadItems] = useState(false);
   const [positions, setPositions] = useState({}); // store id → {x,y}
 
@@ -36794,23 +36802,23 @@ const App = () => {
   };
   return /*#__PURE__*/React.createElement(ScreenDropLayer, {
     onDrop: moveItem
-  }, /*#__PURE__*/React.createElement(ItemForm, {
-    triggerReload: () => setReloadItems(!reloadItems)
-  }), /*#__PURE__*/React.createElement(ItemList, {
+  }, /*#__PURE__*/React.createElement(ItemList, {
     items: [],
     reloadItems: reloadItems,
     positions: positions
   }));
 };
 const init = () => {
-  const root = createRoot(document.getElementById('app'));
+  const invDiv = document.getElementById('inv');
+  if (!invDiv) return;
+  const root = createRoot(invDiv);
   root.render(/*#__PURE__*/React.createElement(react_dnd__WEBPACK_IMPORTED_MODULE_0__.DndProvider, {
     backend: react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__.HTML5Backend
-  }, /*#__PURE__*/React.createElement(App, null)));
+  }, /*#__PURE__*/React.createElement(Inv, null)));
 };
 window.onload = init;
 })();
 
 /******/ })()
 ;
-//# sourceMappingURL=inventoryBundle.js.map
+//# sourceMappingURL=invBundle.js.map

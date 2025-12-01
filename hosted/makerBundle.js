@@ -30463,6 +30463,7 @@ const handleItem = (e, onItemAdded) => {
     helper.handleError('all fields required');
     return false;
   }
+  console.log(e.target.action);
   helper.sendPost(e.target.action, {
     name,
     pieces,
@@ -30499,7 +30500,7 @@ const ItemForm = props => {
     value: "Make Item"
   }));
 };
-const App = () => {
+const Maker = () => {
   const [reloadItems, setReloadItems] = useState(false);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     id: "makeItem"
@@ -30508,8 +30509,10 @@ const App = () => {
   })));
 };
 const init = () => {
-  const root = createRoot(document.getElementById('app'));
-  root.render(/*#__PURE__*/React.createElement(App, null));
+  const makerDiv = document.getElementById('maker');
+  if (!makerDiv) return;
+  const root = createRoot(makerDiv);
+  root.render(/*#__PURE__*/React.createElement(ItemForm, null, /*#__PURE__*/React.createElement(Maker, null)));
 };
 window.onload = init;
 })();

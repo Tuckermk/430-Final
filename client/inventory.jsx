@@ -8,55 +8,64 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useDrag } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 
-//Inventory Items are going to be called ite here since Dragging has a item key
-function ItemDragging({ite, children}) {
+function ItemDragging({item, children}) {
   const [{isDragging}, drag] = useDrag(() => ({
     type: "ITE",
-    item: {id: ite._id},
-    collect: monitor => ({
+    item: {id: item._id},
+    collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  }))
+  }));
 
   return (
     <div
       ref={drag}
       style={{
         position: "absolute",
-        left: ite.xOverall,
-        top: ite.yOverall,
+        left: item.x,
+        top: item.y,
         opacity: isDragging ? 0.5 : 1,
-        cursor: "grab", //cool little styling thing i found
+        cursor: "grab",
       }}
     >
       {children}
     </div>
-  )
+  );
 }
 
+
 const ScreenDropLayer = ({ onDrop, children }) => {
-  const [, dropRef] = useDrop(() => ({
+  const dropRef = React.useRef(null);
+
+  useDrop(() => ({
     accept: "ITE",
-    //v these should be item not ite, i think
     drop: (item, monitor) => {
-      const offset = monitor.getClientOffset();
-      if (!offset) return;
-      onDrop(item.id, offset.x, offset.y);
+      const client = monitor.getClientOffset();
+      const rect = dropRef.current.getBoundingClientRect();
+
+      const x = client.x - rect.left;
+      const y = client.y - rect.top;
+
+      onDrop(item.id, x, y);
     },
-  }));
+  }), [onDrop]);
 
   return (
     <div
       ref={dropRef}
       style={{
-        position: "fixed",
-        inset: 0,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
       }}
     >
       {children}
     </div>
   );
 };
+
 
 //NTS Need to make board
 //perhaps go find making a chessboard for example?
@@ -69,12 +78,13 @@ const ItemList = (props) => {
     const response = await fetch('/getItems');
     const data = await response.json();
 
-   const merged = data.items.map(ite => {
-   const pos = props.positions[ite._id] || { x: 20, y: 20 }; //NTS Probably the thing to alter to make it work with a cloud server
+   const merged = data.items.map(i => {
+   const pos = props.positions[i] || {x: i.xOverall, y: i.yOverall};
+   console.log(pos);
    return {
-      _id: ite._id,
-      name: ite.name,
-      pieces: ite.pieces,
+      _id: i._id,
+      name: i.name,
+      pieces: i.pieces,
       x: pos.x,
       y: pos.y,
    };
@@ -94,14 +104,16 @@ const ItemList = (props) => {
       );
    }
 
-   const itemNodes = items.map(ite => {
+   const itemNodes = items.map(it => {
       return (
-         <ItemDragging key={ite._id} item={ite}>
+         <ItemDragging key={it._id} item={it}>
             <div className="item">
                {/* NTS reminder to change the artwork */}
-            <img src="/assets/img/domoface.jpeg" alt='domo face' className='domoFace'/> 
-            <h3 className='itemName'>Name: {ite.name}</h3>
-            <h3 className='itemPieces'>Pieces: {ite.pieces}</h3>
+               <img src="/assets/img/domoface.jpeg" alt='domo face' className='domoFace'/> 
+               <h3 className='itemName'>Name: {it.name}</h3>
+               <h3 className='itemPieces'>Pieces: {it.pieces}</h3>
+               <h3 className='itemPieces'>x: {it.x}</h3>
+               <h3 className='itemPieces'>y: {it.y}</h3>
             </div>
          </ItemDragging>
       );
@@ -114,7 +126,7 @@ const ItemList = (props) => {
    );
 }
 
-const App = () => {
+const Inv = () => {
   const [reloadItems, setReloadItems] = useState(false);
   const [positions, setPositions] = useState({}); // store id → {x,y}
 
@@ -124,18 +136,19 @@ const App = () => {
 
   return (
     <ScreenDropLayer onDrop={moveItem}>
-      <ItemForm triggerReload={() => setReloadItems(!reloadItems)} />
       <ItemList items={[]} reloadItems={reloadItems} positions={positions}/>
     </ScreenDropLayer>
   );
 };
 
 const init = () => {
-   const root = createRoot(document.getElementById('app'));
+   const invDiv = document.getElementById('inv');
+   if (!invDiv) return;
+   const root = createRoot(invDiv);
    root.render(
     <DndProvider backend={HTML5Backend}>
-      <App/>
-    </DndProvider>
+      <Inv/>
+   </DndProvider>
   );
 }
 

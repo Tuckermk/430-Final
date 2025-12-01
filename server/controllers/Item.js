@@ -2,8 +2,8 @@ const models = require('../models');
 
 const { Item } = models;
 
-const inventoryPage = async (req, res) => res.render('app');
-const makerPage = async (req, res) => res.render('app');
+const inventoryPage = async (req, res) => res.render('inv');
+const makerPage = async (req, res) => res.render('maker');
 
 const makeItem = async (req, res) => {
   if (!req.body.name) {
@@ -12,6 +12,9 @@ const makeItem = async (req, res) => {
 
    const itemData = {
     name: req.body.name,
+    pieces: req.body.pieces,
+    xOverall: req.body.xOverall,
+    yOverall: req.body.yOverall,
     owner: req.session.account._id,
   };
   try {
@@ -19,6 +22,9 @@ const makeItem = async (req, res) => {
     await newItem.save();
     return res.status(201).json({
       name: newItem.name,
+      pieces: newItem.pieces,
+      xOverall: newItem.xOverall,
+      yOverall: newItem.yOverall,
       //NTS reminder to calc xOverall & yOverall -- Think it might be working testing required
     });
   } catch (err) {

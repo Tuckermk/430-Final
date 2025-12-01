@@ -12,23 +12,23 @@ const itemSchema = new mongoose.Schema({
        set: setName,
      },
      pieces: {
-       type: Array,
+       type: String,
        items: {
          type: _.object,
          shape: String,
          subX: Number,
          subY: Number,
        },
-       required: true,
+       required: false,
      },
      xOverall: {
        type: Number,
-       required: true,
+       required: false,
        min: 0,
      },
      yOverall: {
        type: Number,
-       required: true,
+       required: false,
        min: 0,
      },
      owner: {

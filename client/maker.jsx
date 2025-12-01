@@ -17,6 +17,7 @@ const handleItem = (e, onItemAdded) => {
       helper.handleError('all fields required');
       return false;
    }
+   console.log(e.target.action);
    helper.sendPost(e.target.action, {name, pieces, xOverall , yOverall}, onItemAdded);
    return false;
 };
@@ -39,7 +40,7 @@ const ItemForm = (props) => {
    )
 };
 
-const App = () => {
+const Maker = () => {
   const [reloadItems, setReloadItems] = useState(false);
 
   return (
@@ -51,7 +52,9 @@ const App = () => {
   );
 }
 const init = () => {
-  const root = createRoot(document.getElementById('app'));
-  root.render(<App/>);
+  const makerDiv = document.getElementById('maker');
+  if (!makerDiv) return;
+  const root = createRoot(makerDiv);
+  root.render(<ItemForm><Maker/></ItemForm>);
 };
 window.onload = init;
