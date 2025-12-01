@@ -36698,7 +36698,7 @@ function ItemDragging({
       left: item.x,
       top: item.y,
       opacity: isDragging ? 0.5 : 1,
-      cursor: "grab"
+      cursor: "grab" //cool little styling thing i found
     }
   }, children);
 }
@@ -36706,25 +36706,19 @@ const ScreenDropLayer = ({
   onDrop,
   children
 }) => {
-  const dropRef = React.useRef(null);
-  (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
+  const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
     accept: "ITE",
     drop: (item, monitor) => {
-      const client = monitor.getClientOffset();
-      const rect = dropRef.current.getBoundingClientRect();
-      const x = client.x - rect.left;
-      const y = client.y - rect.top;
-      onDrop(item.id, x, y);
+      const offset = monitor.getClientOffset();
+      if (!offset) return;
+      onDrop(item.id, offset.x, offset.y);
     }
-  }), [onDrop]);
+  }));
   return /*#__PURE__*/React.createElement("div", {
     ref: dropRef,
     style: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0
+      position: "fixed",
+      inset: 0
     }
   }, children);
 };
@@ -36739,7 +36733,7 @@ const ItemList = props => {
       const response = await fetch('/getItems');
       const data = await response.json();
       const merged = data.items.map(i => {
-        const pos = props.positions[i] || {
+        const pos = props.positions[i._id] || {
           x: i.xOverall,
           y: i.yOverall
         };
@@ -36778,10 +36772,8 @@ const ItemList = props => {
     }, "Name: ", it.name), /*#__PURE__*/React.createElement("h3", {
       className: "itemPieces"
     }, "Pieces: ", it.pieces), /*#__PURE__*/React.createElement("h3", {
-      className: "itemPieces"
-    }, "x: ", it.x), /*#__PURE__*/React.createElement("h3", {
-      className: "itemPieces"
-    }, "y: ", it.y)));
+      className: "Pos"
+    }, "POS: ", it.x, ",", it.y)));
   });
   return /*#__PURE__*/React.createElement("div", {
     className: "ItemList"
