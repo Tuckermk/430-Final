@@ -11,7 +11,7 @@ import { useDrop } from 'react-dnd';
 function ItemDragging({item, children}) {
   const [{isDragging}, drag] = useDrag(() => ({
     type: "ITE",
-    item: {id: item._id},
+    item: {id: item._id, name: item.name, },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -41,10 +41,14 @@ const ScreenDropLayer = ({ onDrop, children }) => {
       const offset = monitor.getClientOffset();
       if (!offset) return;
 
+      let xNew = offset.x;
+      let yNew = offset.y;
+      let name = item.name;
+      let id = item.id;
+      helper.sendPost('/update', {id, name, xNew , yNew});
       onDrop(item.id, offset.x, offset.y);
     },
   }));
-
   return (
     <div
       ref={dropRef}

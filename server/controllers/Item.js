@@ -36,6 +36,22 @@ const makeItem = async (req, res) => {
   }
 }
 
+const updateItem = async(req,res)=> {
+  const itemData = {
+    id: req.body.id,
+    name: req.body.name,
+    xNew: req.body.xNew,
+    yNew: req.body.yNew,
+    owner: req.session.account._id,
+  };
+  const updated = await Item.findOneAndUpdate( //Worlds best builtin function
+    { _id: itemData.id, owner: itemData.owner },
+    { xOverall: itemData.xNew, yOverall: itemData.yNew },
+    { new: true }
+  );
+  // console.log(updated);
+}
+
 const getItems = async (req, res) => {
   try {
     const query = { owner: req.session.account._id };
@@ -51,6 +67,7 @@ const getItems = async (req, res) => {
 module.exports = {
   makerPage,
   makeItem,
+  updateItem,
   getItems,
   inventoryPage,
 }

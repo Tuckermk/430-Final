@@ -30463,7 +30463,7 @@ const handleItem = (e, onItemAdded) => {
     helper.handleError('all fields required');
     return false;
   }
-  console.log(e.target.action);
+  //  console.log(e.target.action);
   helper.sendPost(e.target.action, {
     name,
     pieces,

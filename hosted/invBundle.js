@@ -36685,7 +36685,8 @@ function ItemDragging({
   }, drag] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_2__.useDrag)(() => ({
     type: "ITE",
     item: {
-      id: item._id
+      id: item._id,
+      name: item.name
     },
     collect: monitor => ({
       isDragging: monitor.isDragging()
@@ -36711,6 +36712,16 @@ const ScreenDropLayer = ({
     drop: (item, monitor) => {
       const offset = monitor.getClientOffset();
       if (!offset) return;
+      let xNew = offset.x;
+      let yNew = offset.y;
+      let name = item.name;
+      let id = item.id;
+      helper.sendPost('/update', {
+        id,
+        name,
+        xNew,
+        yNew
+      });
       onDrop(item.id, offset.x, offset.y);
     }
   }));
