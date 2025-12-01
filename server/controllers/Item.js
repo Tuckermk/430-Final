@@ -37,6 +37,7 @@ const makeItem = async (req, res) => {
 }
 
 const updateItem = async(req,res)=> {
+  try{
   const itemData = {
     id: req.body.id,
     name: req.body.name,
@@ -49,6 +50,12 @@ const updateItem = async(req,res)=> {
     { xOverall: itemData.xNew, yOverall: itemData.yNew },
     { new: true }
   );
+  return res.status(200).json(updated);
+}
+catch(err){
+  console.log(err);
+  return res.status(500).json({error: 'error occured while updating'})
+}
   // console.log(updated);
 }
 
