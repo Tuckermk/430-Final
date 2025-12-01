@@ -112,8 +112,6 @@ const ItemList = (props) => {
                <img src="/assets/img/domoface.jpeg" alt='domo face' className='domoFace'/> 
                <h3 className='itemName'>Name: {it.name}</h3>
                <h3 className='itemPieces'>Pieces: {it.pieces}</h3>
-               <h3 className='itemPieces'>x: {it.x}</h3>
-               <h3 className='itemPieces'>y: {it.y}</h3>
             </div>
          </ItemDragging>
       );
