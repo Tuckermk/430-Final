@@ -42221,7 +42221,7 @@ const {
 
 
 
-const squareSize = 5;
+const squareSize = 50;
 function ItemDragging({
   item,
   children
@@ -42325,16 +42325,16 @@ const ItemList = props => {
     return split.map(coor => {
       let trimmed = coor.replace('(', '').replace(')', '').trim().split(','); //certainly a line of all time
       let x = trimmed[0] * squareSize;
-      console.log(trimmed[0]);
-      let y = trimmed[1] * squareSize;
-      console.log(trimmed[1]);
+      // console.log(trimmed[0]);
+      let y = -trimmed[1] * squareSize;
+      // console.log(trimmed[1]);
       return /*#__PURE__*/React.createElement("img", {
         key: coor,
         src: "/assets/img/domoface.jpeg",
         alt: "domo face",
         className: "domoFace",
         style: {
-          position: "relative",
+          position: "absolute",
           left: x,
           top: y
         }

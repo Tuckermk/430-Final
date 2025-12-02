@@ -7,10 +7,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useDrag } from 'react-dnd';
 import { useDrop } from 'react-dnd';
-import { forEach } from 'underscore';
 
-const squareSize = 5;
-
+const squareSize = 50;
+//NTS Fix the misaligned visual while dragging
 function ItemDragging({item, children}) {
   const [{isDragging}, drag] = useDrag(() => ({
     type: "ITE",
@@ -109,12 +108,12 @@ const ItemList = (props) => {
          let trimmed = coor.replace('(','').replace(')','')
             .trim().split(','); //certainly a line of all time
          let x = trimmed[0] *squareSize;
-         console.log(trimmed[0]);
-         let y = trimmed[1] *squareSize; 
-         console.log(trimmed[1]);
+         // console.log(trimmed[0]);
+         let y = -trimmed[1] *squareSize; 
+         // console.log(trimmed[1]);
     return (
       <img key={coor} src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"
-        style={{position: "relative", left: x, top: y}}/>
+        style={{position: "absolute", left: x, top: y}}/>
     );
   });
 };
