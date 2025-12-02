@@ -13,30 +13,29 @@ const itemSchema = new mongoose.Schema({
      },
      pieces: {
        type: String,
-       items: {
-         type: _.object,
-         shape: String,
-         subX: Number,
-         subY: Number,
-       },
-       required: false,
+       required: true,
      },
-     xOverall: {
+     inv: { //AutoGenned I guess
+      type: String,
+      trim: true,
+      required: false,
+     },
+     xOverall: { //AutoGenned
        type: Number,
        required: false,
        min: 0,
      },
-     yOverall: {
+     yOverall: { //AutoGenned
        type: Number,
        required: false,
        min: 0,
      },
-     owner: {
+     owner: { //AutoGenned
        type: mongoose.Schema.ObjectId,
        required: true,
        ref: 'Account',
      },
-     createdDate: {
+     createdDate: { //AutoGenned
        type: Date,
        default: Date.now,
      },

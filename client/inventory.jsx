@@ -13,7 +13,7 @@ const squareSize = 50;
 function ItemDragging({item, children}) {
   const [{isDragging}, drag] = useDrag(() => ({
     type: "ITE",
-    item: {id: item._id, name: item.name, x: item.x, y:item.y},
+    item: {id: item._id, name: item.name, inv: item.inv, x: item.x, y:item.y},
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -75,16 +75,15 @@ const ItemList = (props) => {
   const loadItemsFromServer = async () => {
     const response = await fetch('/getItems');
     const data = await response.json();
-
    const merged = data.items.map(i => {
    const pos = props.positions[i._id] || {x: i.xOverall, y: i.yOverall};
-   // console.log(pos);
    return {
       _id: i._id,
       name: i.name,
       pieces: i.pieces,
       x: pos.x,
       y: pos.y,
+      inv: i.inv,
    };
    });
 
@@ -101,21 +100,23 @@ const ItemList = (props) => {
          </div>
       );
    }
+   let currentChannel = document.getElementById('channelSelect');
    //Parser/visual side to arrange the blocks
    const blockMaker = (it) => {
       const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
       return split.map((coor) => {
+         if(it.inv !== currentChannel.value){return;} //NTS Test required, Should skip items when not in current inventory
          let trimmed = coor.replace('(','').replace(')','')
             .trim().split(','); //certainly a line of all time
          let x = trimmed[0] *squareSize;
          // console.log(trimmed[0]);
          let y = -trimmed[1] *squareSize; 
          // console.log(trimmed[1]);
-    return (
-      <img key={coor} src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"
-        style={{position: "absolute", left: x, top: y}}/>
-    );
-  });
+         return (
+            <img key={coor} src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace"
+            style={{position: "absolute", left: x, top: y}}/>
+         );
+      });
 };
 
    const itemNodes = items.map(it => {
@@ -150,15 +151,31 @@ const Inv = () => {
   );
 };
 
-const init = () => {
-   const invDiv = document.getElementById('inv');
-   if (!invDiv) return;
-   const root = createRoot(invDiv);
+let root;
+const socket = io();
+const handleChannelSelect = () => {
+   const channelSelect = document.getElementById('channelSelect');
+   channelSelect.addEventListener('change', ()=> {
+      socket.emit('room change', channelSelect.value);
+      initRender();
+   })
+}
+
+const initRender = () => {
    root.render(
     <DndProvider backend={HTML5Backend}>
       <Inv/>
    </DndProvider>
   );
+}
+
+const init = () => {
+   const invDiv = document.getElementById('inv');
+   if (!invDiv) {return;}
+   root = createRoot(invDiv);
+   socket.on('newItem');
+   handleChannelSelect();
+   initRender();
 }
 
 window.onload = init;

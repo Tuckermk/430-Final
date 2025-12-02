@@ -8,6 +8,10 @@
 <body>
   <nav><a href="/login"><img id="logo" src="/assets/img/face.png" alt="face logo"/></a>
     <div class="navlink"><a href="/logout">Log out</a></div>
+    <select name="channel" id="channelSelect">
+      <option value="Inv1">Inventory1</option>
+      <option value="Inv2">Inventory2</option>
+    </select>
   </nav>
 
   <div id="inv">
@@ -19,6 +23,7 @@
     <h3><span id="errorMessage"></span></h3>
     <img id="item" src="assets/img/domo.png" alt="domo"/>
   </div>
+    <script src="/socket.io/socket.io.js"></script>
   <script src="/assets/invBundle.js"></script>
 </body>
 </html>

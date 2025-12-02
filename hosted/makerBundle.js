@@ -30455,8 +30455,8 @@ const handleItem = (e, onItemAdded) => {
   e.preventDefault();
   helper.hideError();
   const name = e.target.querySelector('#itemName').value;
-  //  NTS need to make a pieces parser, go find the one i made for the Unity version perhaps?
   const pieces = e.target.querySelector('#itemPieces').value;
+  const inv = e.target.querySelector('#itemInventory').value;
   const xOverall = innerWidth / 2;
   const yOverall = innerHeight / 2;
   if (!name || !pieces) {
@@ -30467,6 +30467,7 @@ const handleItem = (e, onItemAdded) => {
   helper.sendPost(e.target.action, {
     name,
     pieces,
+    inv,
     xOverall,
     yOverall
   }, onItemAdded);
@@ -30494,7 +30495,14 @@ const ItemForm = props => {
     type: "array",
     name: "pieces",
     placeholder: "(0,1), (1,1), (2,1)"
-  }), /*#__PURE__*/React.createElement("input", {
+  }), /*#__PURE__*/React.createElement("select", {
+    name: "channel",
+    id: "itemInventory"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "Inv1"
+  }, "Inventory1"), /*#__PURE__*/React.createElement("option", {
+    value: "Inv2"
+  }, "Inventory2")), /*#__PURE__*/React.createElement("input", {
     className: "makeItemSubmit",
     type: "submit",
     value: "Make Item"

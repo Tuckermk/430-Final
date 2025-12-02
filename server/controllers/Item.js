@@ -13,6 +13,8 @@ const makeItem = async (req, res) => {
    const itemData = {
     name: req.body.name,
     pieces: req.body.pieces,
+    id: req.body.id,
+    inv: req.body.inv,
     xOverall: req.body.xOverall,
     yOverall: req.body.yOverall,
     owner: req.session.account._id,
@@ -23,6 +25,8 @@ const makeItem = async (req, res) => {
     return res.status(201).json({
       name: newItem.name,
       pieces: newItem.pieces,
+      id: newItem.id,
+      inv: newItem.inv,
       xOverall: newItem.xOverall,
       yOverall: newItem.yOverall,
       //NTS reminder to calc xOverall & yOverall -- Think it might be working testing required
@@ -41,6 +45,7 @@ const updateItem = async(req,res)=> {
   const itemData = {
     id: req.body.id,
     name: req.body.name,
+    inv: req.body.inv,
     xNew: req.body.xNew,
     yNew: req.body.yNew,
     owner: req.session.account._id,
@@ -61,7 +66,7 @@ catch(err){
 const getItems = async (req, res) => {
   try {
     const query = { owner: req.session.account._id };
-    const docs = await Item.find(query).select('name pieces xOverall yOverall').lean().exec();
+    const docs = await Item.find(query).select('name pieces inv xOverall yOverall').lean().exec();
 
     return res.json({ items: docs });
   } catch (err) {
