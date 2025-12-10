@@ -1,12 +1,13 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./client/helper.js":
-/*!**************************!*\
-  !*** ./client/helper.js ***!
-  \**************************/
-/***/ ((module) => {
+/***/ "./client/helper.jsx":
+/*!***************************!*\
+  !*** ./client/helper.jsx ***!
+  \***************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const handleError = message => {
   document.getElementById('errorMessage').textContent = message;
   document.getElementById('itemMessage').classList.remove('hidden');
@@ -16,7 +17,6 @@ const handleError = message => {
    entries in the response JSON object, and will handle them appropriately.
 */
 const sendPost = async (url, data, handler) => {
-  console.log(data);
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -39,10 +39,42 @@ const sendPost = async (url, data, handler) => {
 const hideError = () => {
   document.getElementById('itemMessage').classList.add('hidden');
 };
+
+//Why yes I did change help to jsx just to have this here
+const squareSize = 50;
+const blockMaker = (it, currentInv, makerX = 0, makerY = 0) => {
+  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
+  return split.map(coor => {
+    if (it.inv !== currentInv && currentInv !== 'maker') {
+      return;
+    }
+    let trimmed = coor.replace('(', '').replace(')', '').trim().split(','); //certainly a line of all time
+    let x = trimmed[0] * squareSize;
+    // console.log(trimmed[0]);
+    let y = -trimmed[1] * squareSize;
+    // console.log(trimmed[1]);
+    if (currentInv === 'maker') {
+      x += makerX;
+      y += makerY;
+    }
+    return /*#__PURE__*/React.createElement("img", {
+      key: coor,
+      src: "/assets/img/block.png",
+      alt: "block",
+      className: "block",
+      style: {
+        position: "absolute",
+        left: x,
+        top: y
+      }
+    });
+  });
+};
 module.exports = {
   handleError,
   sendPost,
-  hideError
+  hideError,
+  blockMaker
 };
 
 /***/ }),
@@ -36660,14 +36692,16 @@ var __webpack_exports__ = {};
   \******************************/
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/core/DndProvider.js");
-/* harmony import */ var react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dnd-html5-backend */ "./node_modules/react-dnd-html5-backend/dist/index.js");
-/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrag/useDrag.js");
-/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrop/useDrop.js");
-const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
+/* harmony import */ var react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dnd-html5-backend */ "./node_modules/react-dnd-html5-backend/dist/getEmptyImage.js");
+/* harmony import */ var react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dnd-html5-backend */ "./node_modules/react-dnd-html5-backend/dist/index.js");
+/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrag/useDrag.js");
+/* harmony import */ var react_dnd__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-dnd */ "./node_modules/react-dnd/dist/hooks/useDrop/useDrop.js");
+const helper = __webpack_require__(/*! ./helper.jsx */ "./client/helper.jsx");
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const {
   useState,
-  useEffect
+  useEffect,
+  useRef
 } = React;
 const {
   createRoot
@@ -36676,16 +36710,16 @@ const {
 
 
 
-const squareSize = 50;
-//NTS Fix the misaligned visual while dragging
+let premium = false;
 function ItemDragging({
   item,
+  containerRef,
   children
 }) {
   const [{
-    isDragging
-  }, drag] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_2__.useDrag)(() => ({
-    type: "ITE",
+    opacity
+  }, drag, preview] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrag)(() => ({
+    type: 'ITE',
     item: {
       id: item._id,
       name: item.name,
@@ -36694,35 +36728,50 @@ function ItemDragging({
       y: item.y
     },
     collect: monitor => ({
-      isDragging: monitor.isDragging()
+      opacity: monitor.isDragging() ? 0.4 : 1
     })
   }));
+  useEffect(() => {
+    preview((0,react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__.getEmptyImage)(), {
+      captureDraggingState: true
+    });
+  }, []);
+  const getStyles = (left, top) => {
+    const transform = `translate3d(${left}px, ${top}px, 0)`;
+    return {
+      position: 'absolute',
+      transform,
+      WebkitTransform: transform,
+      opacity
+    };
+  };
   return /*#__PURE__*/React.createElement("div", {
-    ref: drag,
+    ref: preview,
     style: {
-      position: "absolute",
-      left: item.x,
-      top: item.y,
-      opacity: isDragging ? 0.5 : 1,
-      cursor: "grab" //cool little styling thing i found
+      opacity
     }
-  }, children);
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: drag,
+    style: getStyles(item.x, item.y)
+  }, children));
 }
 const ScreenDropLayer = ({
   onDrop,
   children
 }) => {
-  const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_3__.useDrop)(() => ({
+  const dropRef = useRef();
+  const [, drop] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_4__.useDrop)(() => ({
     accept: "ITE",
     drop: (item, monitor) => {
       const offset = monitor.getSourceClientOffset();
-      if (!offset) return;
+      if (!offset || !dropRef.current) return;
       let {
         name,
         id
       } = item;
-      let xNew = offset.x;
-      let yNew = offset.y - 50; //NTS 50 is here due to Screen Drop Area being down 50
+      const rect = dropRef.current.getBoundingClientRect();
+      const xNew = offset.x - rect.left;
+      const yNew = offset.y - rect.top;
       helper.sendPost('/update', {
         id,
         name,
@@ -36732,20 +36781,49 @@ const ScreenDropLayer = ({
       onDrop(item.id, xNew, yNew);
     }
   }));
+  drop(dropRef);
   return /*#__PURE__*/React.createElement("div", {
     ref: dropRef,
-    style: {
-      position: "fixed",
-      inset: "0px",
-      top: "50px"
+    id: "boardArea"
+  }, children);
+};
+const ScreenDeleteLayer = ({
+  onDrop,
+  children
+}) => {
+  //needs to be found & tested
+  const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_4__.useDrop)(() => ({
+    accept: "ITE",
+    drop: (item, monitor) => {
+      const offset = monitor.getSourceClientOffset();
+      if (!offset) return;
+      let {
+        name,
+        id
+      } = item;
+      let xNew = offset.x;
+      let yNew = offset.y;
+      helper.sendPost('/delete', {
+        id,
+        name,
+        xNew,
+        yNew
+      });
+      onDrop(item.id, xNew, yNew);
     }
+  }));
+  return /*#__PURE__*/React.createElement("div", {
+    name: "deleteArea",
+    id: "deleteArea",
+    ref: dropRef
   }, children);
 };
 
 //NTS Need to make board
 //perhaps go find making a chessboard for example?
-
+let currentInv = 'Inv1';
 const ItemList = props => {
+  const containerRef = useRef();
   const [items, setItems] = useState(props.items);
   useEffect(() => {
     const loadItemsFromServer = async () => {
@@ -36771,52 +36849,32 @@ const ItemList = props => {
   }, [props.reloadItems, props.positions]);
   if (items.length === 0) {
     return /*#__PURE__*/React.createElement("div", {
-      className: "itemList"
+      className: "itemList",
+      ref: containerRef
     }, /*#__PURE__*/React.createElement("h3", {
       className: "emptyItem"
     }, "No Items Yet"));
   }
-  let currentChannel = document.getElementById('channelSelect');
-  //Parser/visual side to arrange the blocks
-  const blockMaker = it => {
-    const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
-    return split.map(coor => {
-      if (it.inv !== currentChannel.value) {
-        return;
-      } //NTS Test required, Should skip items when not in current inventory
-      let trimmed = coor.replace('(', '').replace(')', '').trim().split(','); //certainly a line of all time
-      let x = trimmed[0] * squareSize;
-      // console.log(trimmed[0]);
-      let y = -trimmed[1] * squareSize;
-      // console.log(trimmed[1]);
-      return /*#__PURE__*/React.createElement("img", {
-        key: coor,
-        src: "/assets/img/domoface.jpeg",
-        alt: "domo face",
-        className: "domoFace",
-        style: {
-          position: "absolute",
-          left: x,
-          top: y
-        }
-      });
-    });
-  };
-  const itemNodes = items.map(it => {
-    return /*#__PURE__*/React.createElement(ItemDragging, {
-      key: it._id,
-      item: it
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "item"
-    }, blockMaker(it)));
-  });
+  const itemNodes = items.map(it => /*#__PURE__*/React.createElement(ItemDragging, {
+    key: it._id,
+    item: it,
+    containerRef: containerRef
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "item"
+  }, helper.blockMaker(it, currentInv))));
   return /*#__PURE__*/React.createElement("div", {
-    className: "ItemList"
+    className: "ItemList",
+    ref: containerRef,
+    style: {
+      position: 'relative',
+      width: '100%',
+      height: '100%'
+    }
   }, itemNodes);
 };
 const Inv = () => {
   const [reloadItems, setReloadItems] = useState(false);
-  const [positions, setPositions] = useState({}); // store id → {x,y}
+  const [positions, setPositions] = useState({}); // store id -> {x,y}
 
   const moveItem = (id, x, y) => {
     setPositions(prev => ({
@@ -36827,27 +36885,100 @@ const Inv = () => {
       }
     }));
   };
-  return /*#__PURE__*/React.createElement(ScreenDropLayer, {
+  const deleteItem = id => {
+    setPositions(prev => {
+      const copy = {
+        ...prev
+      };
+      delete copy[id];
+      return copy;
+    });
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    id: "InventoryArea"
+  }, /*#__PURE__*/React.createElement(ScreenDropLayer, {
     onDrop: moveItem
   }, /*#__PURE__*/React.createElement(ItemList, {
     items: [],
     reloadItems: reloadItems,
     positions: positions
-  }));
+  })), /*#__PURE__*/React.createElement(ScreenDeleteLayer, {
+    onDrop: deleteItem
+  }, /*#__PURE__*/React.createElement("div", null, "DROP HERE TO DELETE")));
 };
 let root;
-const socket = io();
-const handleChannelSelect = () => {
-  const channelSelect = document.getElementById('channelSelect');
-  channelSelect.addEventListener('change', () => {
-    socket.emit('room change', channelSelect.value);
-    initRender();
-  });
-};
 const initRender = () => {
   root.render(/*#__PURE__*/React.createElement(react_dnd__WEBPACK_IMPORTED_MODULE_0__.DndProvider, {
-    backend: react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__.HTML5Backend
+    backend: react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_2__.HTML5Backend
   }, /*#__PURE__*/React.createElement(Inv, null)));
+};
+const socket = io();
+const returnToLastButton = (checkedButton, attemptedButton) => {
+  checkedButton.checked = true;
+  attemptedButton.checked = false;
+};
+const handleChannelSelect = () => {
+  const inv1 = document.getElementById('Inv1');
+  let checkedButton = inv1;
+  let attemptedButton;
+  inv1.addEventListener('change', () => {
+    if (inv1.checked) {
+      socket.emit('room change', inv1.value);
+      currentInv = 'Inv1';
+      initRender();
+      checkedButton = inv1;
+    }
+  });
+  const inv2 = document.getElementById('Inv2');
+  inv2.addEventListener('change', () => {
+    if (inv2.checked) {
+      socket.emit('room change', inv2.value);
+      currentInv = 'Inv2';
+      initRender();
+      checkedButton = inv2;
+    }
+  });
+  const inv3 = document.getElementById('Inv3');
+  inv3.addEventListener('change', () => {
+    if (inv3.checked) {
+      socket.emit('room change', inv3.value);
+      currentInv = 'Inv3';
+      initRender();
+      checkedButton = inv3;
+    }
+  });
+  const inv4 = document.getElementById('Inv4');
+  inv4.addEventListener('change', () => {
+    if (!premium) {
+      attemptedButton = inv4;
+      returnToLastButton(checkedButton, attemptedButton);
+      return;
+    }
+    if (inv4.checked) {
+      socket.emit('room change', inv4.value);
+      currentInv = 'Inv4';
+      initRender();
+      checkedButton = inv4;
+    }
+  });
+  const inv5 = document.getElementById('Inv5');
+  inv5.addEventListener('change', () => {
+    if (!premium) {
+      attemptedButton = inv5;
+      returnToLastButton(checkedButton, attemptedButton);
+      return;
+    }
+    if (inv5.checked) {
+      socket.emit('room change', inv5.value);
+      currentInv = 'Inv5';
+      initRender();
+      checkedButton = inv5;
+    }
+  });
+  const prem = document.getElementById('prem');
+  prem.addEventListener('change', () => {
+    premium = prem.checked;
+  });
 };
 const init = () => {
   const invDiv = document.getElementById('inv');

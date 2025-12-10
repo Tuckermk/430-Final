@@ -1,4 +1,4 @@
-const helper = require('./helper.js');
+const helper = require('./helper.jsx');
 const React = require('react');
 const {createRoot} = require('react-dom/client');
 

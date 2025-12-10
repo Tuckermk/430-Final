@@ -29,7 +29,6 @@ const makeItem = async (req, res) => {
       inv: newItem.inv,
       xOverall: newItem.xOverall,
       yOverall: newItem.yOverall,
-      //NTS reminder to calc xOverall & yOverall -- Think it might be working testing required
     });
   } catch (err) {
     console.log(err);
@@ -63,6 +62,27 @@ catch(err){
   // console.log(updated);
 }
 
+const deleteItem = async(req,res)=>{
+  try{
+    const itemData = {
+      id: req.body.id,
+      name: req.body.name,
+      inv: req.body.inv,
+      xNew: req.body.xNew,
+      yNew: req.body.yNew,
+      owner: req.session.account._id,
+    };
+    const updated = await Item.findOneAndDelete( //Worlds best builtin function 2
+      { _id: itemData.id, owner: itemData.owner },
+    );
+    return res.status(200).json(updated);
+  }
+  catch(err){
+    console.log(err);
+    return res.status(500).json({error: 'error occured while updating'})
+  }
+}
+
 const getItems = async (req, res) => {
   try {
     const query = { owner: req.session.account._id };
@@ -79,6 +99,7 @@ module.exports = {
   makerPage,
   makeItem,
   updateItem,
+  deleteItem,
   getItems,
   inventoryPage,
 }

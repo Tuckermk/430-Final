@@ -2,14 +2,6 @@ const http = require('http');
 const {Server} = require('socket.io');
 let io;
 
-//This function will probably redone to be somehow more generalized we will see
-const handleItemToRoom =(socket,item) => {
-   socket.rooms.forEach(room => {
-      console.log('roomCHANGE');
-      if(room === socket.id) return;
-      io.to(room).emit('newItemInbound', item);
-   })
-}
 
 const handleRoomChange = (socket, roomName) => {
     socket.rooms.forEach(room => {
@@ -33,7 +25,6 @@ const socketSetup = (app) => {
             console.log('a user disconnected');
         });
 
-        socket.on('newItemInbound', (item) => handleItemToRoom(socket, item));
         socket.on('room change', (room) => handleRoomChange(socket, room));
     });
 

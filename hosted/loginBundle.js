@@ -1,12 +1,13 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./client/helper.js":
-/*!**************************!*\
-  !*** ./client/helper.js ***!
-  \**************************/
-/***/ ((module) => {
+/***/ "./client/helper.jsx":
+/*!***************************!*\
+  !*** ./client/helper.jsx ***!
+  \***************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
+const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const handleError = message => {
   document.getElementById('errorMessage').textContent = message;
   document.getElementById('itemMessage').classList.remove('hidden');
@@ -16,7 +17,6 @@ const handleError = message => {
    entries in the response JSON object, and will handle them appropriately.
 */
 const sendPost = async (url, data, handler) => {
-  console.log(data);
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -39,10 +39,42 @@ const sendPost = async (url, data, handler) => {
 const hideError = () => {
   document.getElementById('itemMessage').classList.add('hidden');
 };
+
+//Why yes I did change help to jsx just to have this here
+const squareSize = 50;
+const blockMaker = (it, currentInv, makerX = 0, makerY = 0) => {
+  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
+  return split.map(coor => {
+    if (it.inv !== currentInv && currentInv !== 'maker') {
+      return;
+    }
+    let trimmed = coor.replace('(', '').replace(')', '').trim().split(','); //certainly a line of all time
+    let x = trimmed[0] * squareSize;
+    // console.log(trimmed[0]);
+    let y = -trimmed[1] * squareSize;
+    // console.log(trimmed[1]);
+    if (currentInv === 'maker') {
+      x += makerX;
+      y += makerY;
+    }
+    return /*#__PURE__*/React.createElement("img", {
+      key: coor,
+      src: "/assets/img/block.png",
+      alt: "block",
+      className: "block",
+      style: {
+        position: "absolute",
+        left: x,
+        top: y
+      }
+    });
+  });
+};
 module.exports = {
   handleError,
   sendPost,
-  hideError
+  hideError,
+  blockMaker
 };
 
 /***/ }),
@@ -30442,7 +30474,7 @@ var __webpack_exports__ = {};
 /*!**************************!*\
   !*** ./client/login.jsx ***!
   \**************************/
-const helper = __webpack_require__(/*! ./helper.js */ "./client/helper.js");
+const helper = __webpack_require__(/*! ./helper.jsx */ "./client/helper.jsx");
 const React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 const {
   createRoot

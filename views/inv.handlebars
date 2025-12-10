@@ -6,23 +6,29 @@
   <link rel="stylesheet" type="text/css" href="/assets/style.css"/>
 </head>
 <body>
-  <nav><a href="/login"><img id="logo" src="/assets/img/face.png" alt="face logo"/></a>
-    <div class="navlink"><a href="/logout">Log out</a></div>
-    <select name="channel" id="channelSelect">
-      <option value="Inv1">Inventory1</option>
-      <option value="Inv2">Inventory2</option>
-    </select>
+  <div id="itemMessage" class='hidden'>
+    <h3><span id="errorMessage"></span></h3>
+  </div>
+  <nav><a href="/login"><img id="logo" src="/assets/img/hammer.png" alt="logo"/></a>
+  <div class="navlink"><a href="/maker">Maker Page</a></div>
+  <div class="navlink"><a href="/logout">Log out</a></div>
+  
+  <div id="invSelect">
+      <label><input type="radio" id="Inv1" name="inv" value="inventory1" checked />Inventory 1</label>
+      <label><input type="radio" id="Inv2" name="inv" value="inventory2" />Inventory 2</label>
+      <label><input type="radio" id="Inv3" name="inv" value="inventory3" />Inventory 3</label>
+      <label><input type="radio" id="Inv4" name="inv" value="inventory4" />Inventory 4</label>
+      <label><input type="radio" id="Inv5" name="inv" value="inventory5" />Inventory 5</label>
+  </div>
+  <br>
+  <div id="invSelect">
+      <label><input type="checkbox" id="prem" name="prem"/>Premium Mode</label>
+  </div>
   </nav>
-
   <div id="inv">
 
   </div>
-{{!-- NTS ART WORK ask Addi? --}}
-  <div id="itemMessage" class='hidden'>
-    <img id="speech" src="/assets/img/speech.png" alt="speech box"/>
-    <h3><span id="errorMessage"></span></h3>
-    <img id="item" src="assets/img/domo.png" alt="domo"/>
-  </div>
+    
     <script src="/socket.io/socket.io.js"></script>
   <script src="/assets/invBundle.js"></script>
 </body>
