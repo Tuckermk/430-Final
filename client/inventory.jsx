@@ -19,10 +19,13 @@ function ItemDragging({ item, containerRef, children }) {
   }));
   //this removes the default ghost like image that you get while dragging something
   //however this only applies for the first time you are dragging it,
+  //The useEffect & getStyles is from react-dnd's documentation specifically the DraggableBox.js 
+  //file in the example on the below page
+  //https://react-dnd.github.io/react-dnd/examples/drag-around/custom-drag-layer
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
-  
+
 const getStyles = (left, top) => {
   const transform = `translate3d(${left}px, ${top}px, 0)`
   return {
