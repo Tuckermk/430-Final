@@ -4,7 +4,8 @@ const helper = require('./helper.jsx');
 const React = require('react');
 const {useState,useEffect} = React;
 const {createRoot} = require('react-dom/client');
-
+//Handler that sends the post request with the information on Maker page
+//additionally calculates the center of the screen at creation as to put the new Item there
 const handleItem = (e, onItemAdded) => {
    e.preventDefault();
    helper.hideError();
@@ -49,7 +50,8 @@ const ItemForm = (props) => {
       </form>
    )
 };
-
+//Houses the React which triggers the send
+//also actively calls block maker as you input things to show you what you are making
 const Maker = () => {
   const [reloadItems, setReloadItems] = useState(false);
   const [tempShape,setTempShape] = useState(false);

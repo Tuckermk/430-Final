@@ -9,14 +9,16 @@ import { useDrag } from 'react-dnd';
 import { useDrop } from 'react-dnd';
 
 let premium = false;
-
+//All logic behind picking up and moving items using react DND
+//returns the item being dragged and its new location
 function ItemDragging({ item, containerRef, children }) {
   const [{ opacity }, drag, preview] = useDrag(() => ({
     type: 'ITE',
     item: { id: item._id, name: item.name, inv: item.inv, x: item.x, y: item.y },
     collect: (monitor) => ({ opacity: monitor.isDragging() ? 0.4 : 1 }),
   }));
-
+  //this removes the default ghost like image that you get while dragging something
+  //however this only applies for the first time you are dragging it,
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
   }, []);
@@ -40,7 +42,8 @@ const getStyles = (left, top) => {
   );
 }
 
-
+//logic behind & React of the main inventory area
+//sends /update with item information
 const ScreenDropLayer = ({ onDrop, children }) => {
   const dropRef = useRef();
   const [, drop] = useDrop(() => ({
@@ -64,7 +67,9 @@ const ScreenDropLayer = ({ onDrop, children }) => {
     </div>
   );
 };
-const ScreenDeleteLayer = ({ onDrop, children }) => { //needs to be found & tested
+//Logic behind & React of the deletion area
+//Sends /deletes with item information
+const ScreenDeleteLayer = ({ onDrop, children }) => { 
   const [, dropRef] = useDrop(() => ({
     accept: "ITE",
     drop: (item, monitor) => {
@@ -86,8 +91,10 @@ const ScreenDeleteLayer = ({ onDrop, children }) => { //needs to be found & test
 };
 
 
-//NTS Need to make board
-//perhaps go find making a chessboard for example?
+
+//generally manages getting the items from server and calling the
+// shape maker function blockMaker to assemble them, since they are saved as arrays
+//returns the inventory in use
 let currentInv = 'Inv1';
 const ItemList = (props) => {
   const containerRef = useRef();
@@ -134,7 +141,7 @@ const ItemList = (props) => {
     </div>
   );
 };
-
+//Top layer that gets rendered with main sections in it
 const Inv = () => {
   const [reloadItems, setReloadItems] = useState(false);
   const [positions, setPositions] = useState({}); // store id -> {x,y}
@@ -175,6 +182,7 @@ const initRender = () => {
 
 const socket = io();
 
+//if you click on a premium inv it sends you back
 const returnToLastButton =(checkedButton,attemptedButton) =>{
   checkedButton.checked = true;
   attemptedButton.checked = false;
