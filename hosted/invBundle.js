@@ -41,9 +41,11 @@ const hideError = () => {
 };
 
 //Why yes I did change help to jsx just to have this here
+//Block maker takes in a Item and the in use inventory
+// then splits its pieces array then spits out the React for a block at each spot
 const squareSize = 50;
 const blockMaker = (it, currentInv, makerX = 0, makerY = 0) => {
-  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
+  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/); // i hate using regex but it is so good
   return split.map(coor => {
     if (it.inv !== currentInv && currentInv !== 'maker') {
       return;
@@ -36711,6 +36713,8 @@ const {
 
 
 let premium = false;
+//All logic behind picking up and moving items using react DND
+//returns the item being dragged and its new location
 function ItemDragging({
   item,
   containerRef,
@@ -36731,6 +36735,11 @@ function ItemDragging({
       opacity: monitor.isDragging() ? 0.4 : 1
     })
   }));
+  //this removes the default ghost like image that you get while dragging something
+  //however this only applies for the first time you are dragging it,
+  //The useEffect & getStyles is from react-dnd's documentation specifically the DraggableBox.js 
+  //file in the example on the below page
+  //https://react-dnd.github.io/react-dnd/examples/drag-around/custom-drag-layer
   useEffect(() => {
     preview((0,react_dnd_html5_backend__WEBPACK_IMPORTED_MODULE_1__.getEmptyImage)(), {
       captureDraggingState: true
@@ -36755,6 +36764,9 @@ function ItemDragging({
     style: getStyles(item.x, item.y)
   }, children));
 }
+
+//logic behind & React of the main inventory area
+//sends /update with item information
 const ScreenDropLayer = ({
   onDrop,
   children
@@ -36787,11 +36799,12 @@ const ScreenDropLayer = ({
     id: "boardArea"
   }, children);
 };
+//Logic behind & React of the deletion area
+//Sends /deletes with item information
 const ScreenDeleteLayer = ({
   onDrop,
   children
 }) => {
-  //needs to be found & tested
   const [, dropRef] = (0,react_dnd__WEBPACK_IMPORTED_MODULE_4__.useDrop)(() => ({
     accept: "ITE",
     drop: (item, monitor) => {
@@ -36819,8 +36832,9 @@ const ScreenDeleteLayer = ({
   }, children);
 };
 
-//NTS Need to make board
-//perhaps go find making a chessboard for example?
+//generally manages getting the items from server and calling the
+// shape maker function blockMaker to assemble them, since they are saved as arrays
+//returns the inventory in use
 let currentInv = 'Inv1';
 const ItemList = props => {
   const containerRef = useRef();
@@ -36872,6 +36886,7 @@ const ItemList = props => {
     }
   }, itemNodes);
 };
+//Top layer that gets rendered with main sections in it
 const Inv = () => {
   const [reloadItems, setReloadItems] = useState(false);
   const [positions, setPositions] = useState({}); // store id -> {x,y}
@@ -36913,6 +36928,8 @@ const initRender = () => {
   }, /*#__PURE__*/React.createElement(Inv, null)));
 };
 const socket = io();
+
+//if you click on a premium inv it sends you back
 const returnToLastButton = (checkedButton, attemptedButton) => {
   checkedButton.checked = true;
   attemptedButton.checked = false;

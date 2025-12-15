@@ -41,9 +41,11 @@ const hideError = () => {
 };
 
 //Why yes I did change help to jsx just to have this here
+//Block maker takes in a Item and the in use inventory
+// then splits its pieces array then spits out the React for a block at each spot
 const squareSize = 50;
 const blockMaker = (it, currentInv, makerX = 0, makerY = 0) => {
-  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); //The regex here is AI generated
+  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/); // i hate using regex but it is so good
   return split.map(coor => {
     if (it.inv !== currentInv && currentInv !== 'maker') {
       return;
@@ -36025,8 +36027,8 @@ __webpack_require__.r(__webpack_exports__);
 const mongoose = __webpack_require__(/*! mongoose */ "./node_modules/mongoose/dist/browser.umd.js");
 const _ = __webpack_require__(/*! underscore */ "./node_modules/underscore/modules/index-all.js");
 const setName = name => _.escape(name).trim();
-//Idea with this schema is that it is the WHOLE item
-//with the pieces of it done in a array of blocks to be remade if needed
+// Idea with this schema is that it is the WHOLE item
+// with the pieces of it done in a array of blocks to be remade if needed
 const itemSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -36039,31 +36041,31 @@ const itemSchema = new mongoose.Schema({
     required: true
   },
   inv: {
-    //AutoGenned I guess
+    // AutoGenned I guess
     type: String,
     trim: true,
     required: false
   },
   xOverall: {
-    //AutoGenned
+    // AutoGenned
     type: Number,
     required: false,
     min: 0
   },
   yOverall: {
-    //AutoGenned
+    // AutoGenned
     type: Number,
     required: false,
     min: 0
   },
   owner: {
-    //AutoGenned
+    // AutoGenned
     type: mongoose.Schema.ObjectId,
     required: true,
     ref: 'Account'
   },
   createdDate: {
-    //AutoGenned
+    // AutoGenned
     type: Date,
     default: Date.now
   }
@@ -36173,6 +36175,8 @@ const {
 const {
   createRoot
 } = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+//Handler that sends the post request with the information on Maker page
+//additionally calculates the center of the screen at creation as to put the new Item there
 const handleItem = (e, onItemAdded) => {
   e.preventDefault();
   helper.hideError();
@@ -36239,6 +36243,8 @@ const ItemForm = props => {
     value: "Make Item"
   }));
 };
+//Houses the React which triggers the send
+//also actively calls block maker as you input things to show you what you are making
 const Maker = () => {
   const [reloadItems, setReloadItems] = useState(false);
   const [tempShape, setTempShape] = useState(false);
