@@ -41,11 +41,11 @@ const hideError = () => {
 };
 
 //Why yes I did change help to jsx just to have this here
-//Block maker takes in a Item and the in use inventory
+//Block maker takes in a Item and the in use inventory, 
 // then splits its pieces array then spits out the React for a block at each spot
 const squareSize = 50;
 const blockMaker = (it, currentInv, makerX = 0, makerY = 0) => {
-  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/); // i hate using regex but it is so good
+  const split = it.pieces.match(/\(\s*[-\d.]+\s*,\s*[-\d.]+\s*\)/g); // i hate using regex but it is so good
   return split.map(coor => {
     if (it.inv !== currentInv && currentInv !== 'maker') {
       return;

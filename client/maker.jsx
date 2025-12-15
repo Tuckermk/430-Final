@@ -67,7 +67,7 @@ const Maker = () => {
     let yCenter = innerHeight/2;
     try {
       let tempShape = helper.blockMaker(tempItem, 'maker',xCenter,yCenter);
-      console.log(tempShape);
+      // console.log(tempShape);
       setTempShape(tempShape);
     } catch (err) {
       helper.hideError(err);
