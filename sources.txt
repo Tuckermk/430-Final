@@ -1,1 +1,2 @@
-https://bangbloom.itch.io/pickaxe-shield-chest-hammer-bottle-knife-cartoon
+art: https://bangbloom.itch.io/pickaxe-shield-chest-hammer-bottle-knife-cartoon
+checkerboard: https://stackoverflow.com/questions/35361986/css-gradient-checkerboard-pattern
