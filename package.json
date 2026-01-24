@@ -1,7 +1,7 @@
 {
-  "name": "n",
+  "name": "draganddropper",
   "version": "1.0.0",
-  "description": "A Simple Login Example using Node.js, Mongo and Redis",
+  "description": "final for 430, you can make, then drag and drop blocks that represent gear or whatever",
   "main": "./server/app.js",
   "scripts": {
     "webpack": "webpack",
